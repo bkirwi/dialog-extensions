@@ -1,0 +1,48 @@
+
+%% Many languages have a datastructure called a dictionary or map that
+%% manages key-value data, but Dialog does not: its only datastructure
+%% is a list. One way to represent key-value data with a list is just
+%% to flatten it out, like so:
+%%
+%% [key1 value1 key2 value2]
+%%
+%% In Lisp, this sort of structure is sometimes called a "property
+%% list", or "plist" for short. (And this file will generally call
+%% them plists, for concision.) A plist is very flexible -- keys and
+%% values can be any Dialog type, including nested lists or plists --
+%% but can be awkward to create and manipulate. This file implements a
+%% few predicates to make working with plists a bit less painful.
+%%
+%% Plists can be somewhat inefficient, since many operations require
+%% searching the full list. Nevertheless, the overhead will typically
+%% be unnoticeable unless your lists are quite long.
+
+%% This predicate, (plist $ key $ has value $), looks up the provided
+%% key in the plist. Note that, if the key is repeated for any reason,
+%% this will yield the first value... and a multi-query will yield all
+%% the values.
+(plist [$query $result | $] key $query has value $result)
+(plist [$ $ | $rest] key $query has value $result)
+    (plist $rest key $query has value $result)
+
+%% This predicate, (plist $ without $ is $), outputs a plist with all
+%% instances of the corresponding key removed.
+(plist [$query $ | $rest] without $query is $result)
+    (plist $rest without $query is $result)
+
+(plist [$k $v | $rest] without $query is [$k $v | $result])
+    (plist $rest without $query is $result)
+
+(plist [] without $ is [])
+
+%% This predicate, (plist $ with $ updated to $ is $), removes any
+%% existing entries for a key and then assigns the new value.
+(plist $plist with $k updated to $v is $result)
+    (plist $plist without $k is $removed)
+    ($result = [$k $v | $removed])
+
+%% Other predicates are possible: for example, if you're confident a
+%% plist does not contain a key, [key value | plist] will output a
+%% new, valid plist with that key; and if you haven't duplicated keys
+%% you may want a version of "without" that removes only the first
+%% instance of the key it finds.
