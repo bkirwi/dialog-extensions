@@ -1,0 +1,41 @@
+%% dgdebug -u plists-tests.dg plists.dg unit.dg
+
+#plists-queries-succeed
+(test *)
+(run *)
+  (plist [#foo 5] key #foo has value 5)
+  (plist [#foo 5 #bar 10] key #foo has value 5)
+  (plist [#foo 5 #bar 10] key #bar has value 10)
+
+#plists-support-complex-keys
+(test *)
+(run *)
+  (plist [[3] #foo @bar 10] key [3] has value #foo)
+
+#plists-handle-negative-queries 
+(test *)
+(run *)
+  ~(plist [] key $ has value $)
+  ~(plist [#foo 5] key #bar has value $)
+
+#plists-multiqueries-succeed
+(test *)
+(run *)
+  (accumulate 1) *(plist [#foo 5 #foo 10] key #foo has value $) (into 2)
+
+#plists-without-removes-value
+(test *)
+(run *)
+  (plist [] without #foo is [])
+  (plist [#foo 5] without #foo is [])
+  (plist [#foo 5 #foo 10] without #foo is [])
+  (plist [#foo 5] without 5 is [#foo 5])
+  (plist [#foo 5 #bar 10 #baz 15] without #bar is [#foo 5 #baz 15])
+
+#plists-update-changes-value
+(test *)
+(run *)
+  (plist [] with #foo updated to 5 is [#foo 5])
+  (plist [#foo 10] with #foo updated to 5 is [#foo 5])
+  (plist [#bar 10] with #foo updated to 5 is [#foo 5 #bar 10])
+  (plist [#foo 10 #foo 10] with #foo updated to 5 is [#foo 5])
